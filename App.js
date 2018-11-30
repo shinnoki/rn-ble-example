@@ -6,8 +6,15 @@
  * @flow
  */
 
-import React, {Component} from 'react';
-import {Platform, StyleSheet, Text, View} from 'react-native';
+import React, { Component } from 'react';
+import {
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+} from 'react-native';
+import { BleManager } from 'react-native-ble-plx';
 
 const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
@@ -18,12 +25,42 @@ const instructions = Platform.select({
 
 type Props = {};
 export default class App extends Component<Props> {
+  state = {
+    bleState: 'Unknown',
+  };
+
+  constructor() {
+    super();
+    this.manager = new BleManager();
+  }
+
+  scan = () => {
+    this.manager.startDeviceScan(null, null, (err, devices) => {
+      if (err) {
+        console.error(err);
+      }
+
+      console.log(devices);
+    });
+  };
+
+  componentDidMount() {
+    this.manager.onStateChange(bleState => {
+      this.setState({ bleState });
+    });
+  }
+
   render() {
     return (
       <View style={styles.container}>
         <Text style={styles.welcome}>Welcome to React Native!</Text>
         <Text style={styles.instructions}>To get started, edit App.js</Text>
-        <Text style={styles.instructions}>{instructions}</Text>
+        <Text style={styles.instructions}>
+          BLE State: {this.state.bleState}
+        </Text>
+        <TouchableOpacity onPress={this.scan}>
+          <Text style={styles.button}>Scan</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -45,5 +82,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#333333',
     marginBottom: 5,
+  },
+  button: {
+    fontSize: 24,
+    color: '#0087ff',
   },
 });
